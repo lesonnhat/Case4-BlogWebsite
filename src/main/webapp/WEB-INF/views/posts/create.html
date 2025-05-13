@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Tạo bài viết mới</title>
+</head>
+<body>
+<h1>Tạo bài viết mới</h1>
+<!-- Hiển thị thông báo lỗi nếu có -->
+<div th:if="${error}" style="color: red;">
+  <p th:text="${error}"></p>
+</div>
+<form th:action="@{/posts/create}" th:object="${post}" method="post" enctype="multipart/form-data">
+  <label for="title">Tiêu đề:</label>
+  <input type="text" id="title" th:field="*{title}" required><br><br>
+
+  <label for="content">Nội dung:</label><br>
+  <textarea id="content" th:field="*{content}" required></textarea><br><br>
+
+  <label for="image">Ảnh:</label>
+  <input type="file" id="image" name="image" accept="image/*" required><br><br>
+
+  <label for="author">Tác giả:</label>
+  <input type="text" id="author" th:value="${session.user.username}" readonly><br><br>
+
+  <button type="submit">Tạo</button>
+</form>
+<a th:href="@{/posts}">Quay lại danh sách</a>
+</body>
+</html>

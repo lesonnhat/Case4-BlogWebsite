@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Tạo người dùng mới</title>
+</head>
+<body>
+<h1>Tạo người dùng mới</h1>
+<form th:action="@{/users/create}" th:object="${user}" method="post">
+  <label for="username">Username:</label>
+  <input type="text" id="username" th:field="*{username}" required><br><br>
+
+  <label for="email">Email:</label>
+  <input type="email" id="email" th:field="*{email}" required><br><br>
+
+  <label for="password">Password:</label>
+  <input type="password" id="password" th:field="*{password}" required><br><br>
+
+  <label for="avatar">Avatar URL:</label>
+  <input type="text" id="avatar" th:field="*{avatar}"><br><br>
+
+  <button type="submit">Tạo</button>
+</form>
+<a th:href="@{/users}">Quay lại danh sách</a>
+</body>
+</html>

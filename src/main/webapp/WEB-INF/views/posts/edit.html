@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Sửa bài viết</title>
+</head>
+<body>
+<h1>Sửa bài viết</h1>
+<!-- Hiển thị thông báo lỗi nếu có -->
+<div th:if="${error}" style="color: red;">
+  <p th:text="${error}"></p>
+</div>
+<!-- Hiển thị ảnh hiện tại -->
+<div th:if="${post.imageUrl}">
+  <p>Ảnh hiện tại:</p>
+  <img th:src="${post.imageUrl}" width="200" alt="Ảnh bài viết"/>
+</div>
+<form th:action="@{/posts/edit/{id}(id=${post.id})}" th:object="${post}" method="post" enctype="multipart/form-data">
+  <input type="hidden" th:field="*{id}">
+
+  <label for="title">Tiêu đề:</label>
+  <input type="text" id="title" th:field="*{title}" required><br><br>
+
+  <label for="content">Nội dung:</label><br>
+  <textarea id="content" th:field="*{content}" required></textarea><br><br>
+
+  <label for="image">Ảnh mới (nếu muốn thay đổi):</label>
+  <input type="file" id="image" name="image" accept="image/*"><br><br>
+
+  <button type="submit">Cập nhật</button>
+</form>
+<a th:href="@{/posts}">Quay lại danh sách</a>
+</body>
+</html>
