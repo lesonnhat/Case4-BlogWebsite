@@ -2,32 +2,129 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
   <title>Sửa bài viết</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="file"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+    }
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+      min-height: 200px;
+      resize: vertical;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+    }
+    .current-image {
+      margin-bottom: 15px;
+    }
+    .current-image img {
+      max-width: 200px;
+      height: auto;
+      border-radius: 5px;
+    }
+    .error {
+      color: red;
+      margin-bottom: 10px;
+    }
+    .button {
+      background-color: #5cb85c;
+      color: white;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      cursor: pointer;
+      font-size: 16px;
+      width: 150px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .button:hover {
+      background-color: #449d44;
+      color: white;
+    }
+    a.button {
+      background-color: #696969;
+    }
+    a.button:hover {
+      background-color: #343434;
+      color: white;
+    }
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
-<h1>Sửa bài viết</h1>
-<!-- Hiển thị thông báo lỗi nếu có -->
-<div th:if="${error}" style="color: red;">
-  <p th:text="${error}"></p>
+<div class="container">
+  <h1>Sửa bài viết</h1>
+  <div th:if="${error}" class="error">
+    <p th:text="${error}"></p>
+  </div>
+  <div th:if="${post.imageUrl}" class="current-image">
+    <p>Ảnh hiện tại:</p>
+    <img th:src="@{${post.imageUrl}}" alt="Ảnh bài viết"/>
+  </div>
+  <form th:action="@{/posts/{id}/edit(id=${post.id})}" th:object="${post}" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+      <input type="hidden" th:field="*{id}">
+    </div>
+    <div class="form-group">
+      <label for="title">Tiêu đề:</label>
+      <input type="text" id="title" th:field="*{title}" required>
+    </div>
+    <div class="form-group">
+      <label for="content">Nội dung:</label>
+      <textarea id="content" th:field="*{content}" required></textarea>
+    </div>
+    <div class="form-group">
+      <label for="image">Ảnh mới (nếu muốn thay đổi):</label>
+      <input type="file" id="image" name="image" accept="image/*">
+    </div>
+    <div class="button-container">
+      <button type="submit" class="button">Cập nhật</button>
+      <a th:href="@{/posts}" class="button">Quay lại</a>
+    </div>
+  </form>
 </div>
-<!-- Hiển thị ảnh hiện tại -->
-<div th:if="${post.imageUrl}">
-  <p>Ảnh hiện tại:</p>
-  <img th:src="${post.imageUrl}" width="200" alt="Ảnh bài viết"/>
-</div>
-<form th:action="@{/posts/edit/{id}(id=${post.id})}" th:object="${post}" method="post" enctype="multipart/form-data">
-  <input type="hidden" th:field="*{id}">
-
-  <label for="title">Tiêu đề:</label>
-  <input type="text" id="title" th:field="*{title}" required><br><br>
-
-  <label for="content">Nội dung:</label><br>
-  <textarea id="content" th:field="*{content}" required></textarea><br><br>
-
-  <label for="image">Ảnh mới (nếu muốn thay đổi):</label>
-  <input type="file" id="image" name="image" accept="image/*"><br><br>
-
-  <button type="submit">Cập nhật</button>
-</form>
-<a th:href="@{/posts}">Quay lại danh sách</a>
 </body>
 </html>

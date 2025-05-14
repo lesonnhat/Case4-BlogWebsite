@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Optional;
 
 @Controller
-@RequestMapping("/likes")
+@RequestMapping("/posts")
 public class LikeController {
 
     @Autowired
@@ -24,8 +24,8 @@ public class LikeController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/like")
-    public String likePost(@RequestParam("postId") Long postId, @RequestParam("userId") Long userId) {
+    @PostMapping("/{postId}/like")
+    public String likePost(@PathVariable Long postId, @RequestParam("userId") Long userId) {
         Optional<Post> post = postService.getPostById(postId);
         Optional<User> user = userService.getUserById(userId);
 
@@ -35,8 +35,8 @@ public class LikeController {
         return "redirect:/posts/" + postId;
     }
 
-    @PostMapping("/unlike")
-    public String unlikePost(@RequestParam("postId") Long postId, @RequestParam("userId") Long userId) {
+    @PostMapping("/{postId}/unlike")
+    public String unlikePost(@PathVariable Long postId, @RequestParam("userId") Long userId) {
         Optional<Post> post = postService.getPostById(postId);
         Optional<User> user = userService.getUserById(userId);
 

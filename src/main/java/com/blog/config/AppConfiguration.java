@@ -16,6 +16,7 @@ import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+import org.springframework.web.filter.HiddenHttpMethodFilter;
 import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -45,7 +46,7 @@ public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAwa
         this.applicationContext = applicationContext;
     }
 
-    //JPA
+    // JPA
     @Bean
     @Qualifier(value = "entityManager")
     public EntityManager entityManager(EntityManagerFactory entityManagerFactory) {
@@ -88,7 +89,7 @@ public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAwa
         return properties;
     }
 
-    //Thymeleaf
+    // Thymeleaf
     @Bean
     public SpringResourceTemplateResolver templateResolver() {
         SpringResourceTemplateResolver templateResolver = new SpringResourceTemplateResolver();
@@ -99,6 +100,7 @@ public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAwa
         templateResolver.setCharacterEncoding("UTF-8");
         return templateResolver;
     }
+
     @Bean
     public ThymeleafViewResolver viewResolver() {
         ThymeleafViewResolver viewResolver = new ThymeleafViewResolver();
@@ -114,16 +116,24 @@ public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAwa
         return templateEngine;
     }
 
+    // Resource handlers
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/media/**")
                 .addResourceLocations("classpath:/static/media/");
     }
 
+    // File upload
     @Bean(name = "multipartResolver")
     public CommonsMultipartResolver getResolver() {
         CommonsMultipartResolver resolver = new CommonsMultipartResolver();
         resolver.setMaxUploadSizePerFile(52428800);
         return resolver;
+    }
+
+    // HiddenHttpMethodFilter (optional now, keep for future RESTful use)
+    @Bean
+    public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
+        return new HiddenHttpMethodFilter();
     }
 }

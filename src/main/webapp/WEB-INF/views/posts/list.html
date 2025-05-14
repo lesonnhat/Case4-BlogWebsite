@@ -14,8 +14,8 @@
             width: 80%;
             margin: auto;
             overflow: hidden;
+            position: relative;
         }
-        /* Post styles */
         .post {
             background-color: #fff;
             border: 1px solid #ddd;
@@ -23,7 +23,7 @@
             padding: 15px;
             border-radius: 5px;
         }
-        .post img {
+        .post img.post-image {
             width: 100%;
             height: auto;
             margin-bottom: 10px;
@@ -35,49 +35,147 @@
         .post p {
             margin-bottom: 15px;
         }
-        .post-actions a {
-            color: #5cb85c;
-            text-decoration: none;
-            margin-right: 10px;
-        }
-        .post-actions a:hover {
-            color: #449d44;
-        }
-        /* Banner styles */
         .banner {
-            background: url('../../../media/background.jpg') no-repeat center center/cover;
+            background: url('/media/background.jpg') no-repeat center center/cover;
             color: white;
             text-align: center;
-            padding: 100px 0;
-            margin-bottom: 20px;
+            padding: 80px 0;
+            margin-bottom: 30px;
         }
         .banner h1 {
-            margin-top: 0;
+            margin: 0;
+            padding: 0;
             font-size: 3em;
         }
-        /* Button styles */
-        .button {
+        .button, .post-actions a {
             background-color: #5cb85c;
             color: white;
-            padding: 10px 15px;
+            padding: 8px 15px;
             border: none;
             cursor: pointer;
             border-radius: 5px;
             text-decoration: none;
             display: inline-block;
+            margin-right: 10px;
         }
-        .button:hover {
+        .button:hover, .post-actions a:hover {
             background-color: #449d44;
         }
-        /* Footer styles */
+        .post-actions a.delete-btn {
+            background-color: #d9534f;
+        }
+        .post-actions a.delete-btn:hover {
+            background-color: #c9302c;
+        }
+        .post-actions a.view-btn {
+            background-color: #5bc0de;
+        }
+        .post-actions a.view-btn:hover {
+            background-color: #31b0d5;
+        }
         .footer {
-            background-color: midnightblue;
+            background-color: #0659b5;
             color: white;
             text-align: center;
             padding: 5px 0;
             margin-top: 30px;
         }
+        .header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .user-info {
+            position: relative;
+        }
+        .user-info a {
+            color: black;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+        }
+        .user-info a span.username {
+            font-style: italic;
+            margin-right: 5px;
+        }
+        .user-info a:hover {
+            color: dodgerblue;
+        }
+        .dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 1;
+            min-width: 150px;
+        }
+        .dropdown a {
+            color: #333;
+            padding: 10px;
+            display: block;
+            text-decoration: none;
+        }
+        .dropdown a:hover {
+            background-color: #f4f4f4;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        .author-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .author-info a {
+            color: #333;
+            text-decoration: none;
+        }
+        .author-info a:hover {
+            color: dodgerblue;
+        }
+        .author-info span.time {
+            margin-left: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .post-actions {
+            display: flex;
+            gap: 10px;
+        }
     </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userInfo = document.querySelector('.user-info');
+            const dropdown = document.querySelector('.dropdown');
+
+            userInfo.addEventListener('click', function(e) {
+                e.preventDefault();
+                dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            });
+
+            // Ngăn chặn sự kiện click trên dropdown lan ra ngoài
+            dropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            // Ẩn dropdown khi click ra ngoài
+            document.addEventListener('click', function(e) {
+                if (!userInfo.contains(e.target)) {
+                    dropdown.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </head>
 <body>
 <div class="banner">
@@ -87,21 +185,44 @@
     </div>
 </div>
 <div class="container">
-    <a th:href="@{/posts/create}" class="button">Tạo bài viết mới</a>
+    <div class="header-actions">
+        <a th:href="@{/posts/new}" class="button">Tạo bài viết mới</a>
+        <div class="user-info">
+            <div th:if="${currentUser != null}">
+                <a href="javascript:void(0)">Xin chào, <span class="username" th:text="${currentUser.username}"></span> ▼</a>
+                <div class="dropdown">
+                    <a th:href="@{/users/{id}/edit(id=${currentUser.id})}">Sửa thông tin</a>
+                    <a th:href="@{/users/logout}">Đăng xuất</a>
+                </div>
+            </div>
+            <div th:unless="${currentUser != null}">
+                <a href="/login">Đăng nhập</a>
+            </div>
+        </div>
+    </div>
     <div th:each="post : ${posts}" class="post">
-        <img th:src="@{${post.imageUrl}}" alt="Ảnh bài viết">
+        <div class="author-info">
+            <img th:src="${post.author.avatar}" class="avatar" alt="Avatar">
+            <a th:href="@{/users/{id}(id=${post.author.id})}" th:text="${post.author.username}"></a>
+            <span class="time" th:text="${#dates.format(post.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+        </div>
+        <img th:src="@{${post.imageUrl}}" class="post-image" alt="Ảnh bài viết">
         <h2 th:text="${post.title}"></h2>
         <p th:text="${post.content}">Nội dung bài viết</p>
         <div class="post-actions">
-            <a th:href="@{/posts/{id}(id=${post.id})}">Xem</a>
-            <a th:href="@{/posts/edit/{id}(id=${post.id})}">Sửa</a>
-            <a th:href="@{/posts/delete/{id}(id=${post.id})}">Xóa</a>
+            <a class="view-btn" th:href="@{/posts/{id}(id=${post.id})}">Xem thêm</a>
+            <div th:if="${currentUser != null and currentUser.id == post.author.id}">
+                <a th:href="@{/posts/{id}/edit(id=${post.id})}">Sửa</a>
+                <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display:inline;">
+                    <a class="delete-btn" href="#" onclick="return confirm('Bạn có muốn xóa bài viết này?') ? this.parentNode.submit() : false;">Xóa</a>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 <footer class="footer">
     <div class="container">
-        <p>&copy; 2025. Bản quyền thuộc về The Best.</p>
+        <p>© 2025. Bản quyền thuộc về The Best.</p>
     </div>
 </footer>
 </body>

@@ -15,6 +15,14 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
+    public boolean existsByUsername(String username) {
+        return userRepository.existsByUsername(username); // Đảm bảo không có lỗi cú pháp
+    }
+
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
+    }
+
     @Transactional
     public User createUser(User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
@@ -23,8 +31,6 @@ public class UserService {
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new IllegalArgumentException("Email already exists");
         }
-        // Loại bỏ mã hóa password
-        // user.setPassword(passwordEncoder.encode(user.getPassword()));
         if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
             user.setAvatar("/media/default_avatar.png");
         }
@@ -38,15 +44,15 @@ public class UserService {
             throw new IllegalArgumentException("User not found");
         }
 
+        // Đảm bảo không set password thành null
+        if (user.getPassword() == null) {
+            user.setPassword(existingUser.getPassword());
+        }
+
         existingUser.setUsername(user.getUsername());
         existingUser.setEmail(user.getEmail());
-        // Loại bỏ mã hóa password
-        // if (user.getPassword() != null && !user.getPassword().isEmpty()) {
-        //     existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
-        // }
-        existingUser.setPassword(user.getPassword()); // Cập nhật password trực tiếp
+        existingUser.setPassword(user.getPassword());
         existingUser.setAvatar(user.getAvatar());
-
         return userRepository.save(existingUser);
     }
 

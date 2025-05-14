@@ -23,7 +23,7 @@ public class LoginController {
         if (error != null) {
             model.addAttribute("error", "Sai tên đăng nhập hoặc mật khẩu");
         }
-        return "login"; // Trả về view "login.html"
+        return "login";
     }
 
     @PostMapping("/login")
@@ -34,12 +34,10 @@ public class LoginController {
         User user = userService.findByUsername(username);
 
         if (user != null && user.getPassword().equals(password)) {
-            // Đăng nhập thành công
             HttpSession session = request.getSession();
-            session.setAttribute("user", user); // Lưu ID người dùng vào session
+            session.setAttribute("user", user);
             return "redirect:/posts";
         } else {
-            // Đăng nhập thất bại
             model.addAttribute("error", "Sai tên đăng nhập hoặc mật khẩu");
             return "login";
         }

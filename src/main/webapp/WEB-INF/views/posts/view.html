@@ -19,10 +19,26 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     .post-image {
-      max-width: 100%;
-      height: auto;
+      max-width: 100%; /* Giữ ảnh không vượt quá container */
+      width: 100%; /* Đặt chiều rộng bằng 100% để ảnh rộng hơn */
+      height: auto; /* Giữ tỷ lệ ảnh */
       border-radius: 5px;
       margin-bottom: 15px;
+      display: block; /* Đảm bảo không bị lề thừa */
+      object-fit: cover; /* Giữ ảnh trong khung */
+      max-height: 400px; /* Giữ nguyên giới hạn chiều cao */
+      margin-left: auto; /* Căn giữa theo chiều ngang */
+      margin-right: auto; /* Căn giữa theo chiều ngang */
+    }
+    .content-wrapper {
+      display: flex; /* Sử dụng flexbox */
+      justify-content: center; /* Căn giữa theo chiều ngang */
+      gap: 0px; /* Khoảng cách giữa ảnh và text */
+      flex-direction: column; /* Sắp xếp theo cột */
+    }
+    .content {
+      flex: 1; /* Nội dung text chiếm phần còn lại */
+      padding: 10px 0;
     }
     .comment {
       border-bottom: 1px solid #ddd;
@@ -65,11 +81,14 @@
 </head>
 <body>
 <div class="container">
-  <h1 th:text="${post.title}"></h1>
-  <img th:src="@{${post.imageUrl}}" alt="Ảnh bài viết">
-  <p th:text="${post.content}"></p>
-  <p>Tác giả: <span th:text="${post.author.username}"></span></p>
-
+  <div class="content-wrapper">
+    <img th:src="@{${post.imageUrl}}" alt="Ảnh bài viết" class="post-image">
+    <div class="content">
+      <h1 th:text="${post.title}"></h1>
+      <p th:text="${post.content}"></p>
+      <p>Tác giả: <span th:text="${post.author.username}"></span></p>
+    </div>
+  </div>
   <h2>Bình luận</h2>
   <!-- Hiển thị thông báo lỗi nếu có -->
   <div th:if="${error}" class="error">
@@ -94,15 +113,15 @@
   <p th:unless="${not #lists.isEmpty(post.comments)}">Chưa có bình luận nào.</p>
 
   <h3>Thêm bình luận</h3>
-  <form th:action="@{/comments/create}" method="post">
+  <form th:action="@{/comments/create}" method="post" th:if="${session.user != null}">
     <input type="hidden" name="postId" th:value="${post.id}">
     <label for="content">Nội dung:</label><br>
     <textarea id="content" name="content" required rows="3" style="width: 100%;"></textarea><br><br>
     <button type="submit" class="button">Bình luận</button>
   </form>
-<!--  <p th:if="${session.user == null}">-->
-<!--    Vui lòng <a th:href="@{/login}">đăng nhập</a> để thêm bình luận.-->
-<!--  </p>-->
+  <p th:if="${session.user == null}">
+    Vui lòng <a th:href="@{/login}">đăng nhập</a> để thêm bình luận.
+  </p>
 
   <br>
   <a th:href="@{/posts}" class="button">Quay lại danh sách</a>

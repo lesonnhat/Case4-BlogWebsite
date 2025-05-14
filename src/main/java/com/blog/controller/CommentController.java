@@ -27,13 +27,13 @@ public class CommentController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/create")
+    @PostMapping
     public String createComment(@ModelAttribute("comment") Comment comment,
                                 @RequestParam("postId") Long postId,
                                 HttpSession session, Model model) {
         User user = (User) session.getAttribute("user");
         if (user == null) {
-            return "redirect:/login"; // Chưa đăng nhập, chuyển hướng đến login
+            return "redirect:/login";
         }
 
         Optional<Post> post = postService.getPostById(postId);
@@ -58,7 +58,6 @@ public class CommentController {
         }
 
         Comment commentToEdit = comment.get();
-        // Kiểm tra quyền: Chỉ người tạo bình luận mới được chỉnh sửa
         if (!commentToEdit.getUser().getId().equals(currentUser.getId())) {
             model.addAttribute("error", "Bạn không có quyền chỉnh sửa bình luận này");
             return "redirect:/posts/" + commentToEdit.getPost().getId();
@@ -66,7 +65,7 @@ public class CommentController {
 
         model.addAttribute("comment", commentToEdit);
         model.addAttribute("postId", commentToEdit.getPost().getId());
-        return "comments/edit"; // Template để chỉnh sửa bình luận
+        return "comments/edit";
     }
 
     @PostMapping("/{id}/edit")
@@ -83,7 +82,6 @@ public class CommentController {
         }
 
         Comment commentToUpdate = existingComment.get();
-        // Kiểm tra quyền
         if (!commentToUpdate.getUser().getId().equals(currentUser.getId())) {
             model.addAttribute("error", "Bạn không có quyền chỉnh sửa bình luận này");
             return "redirect:/posts/" + postId;
@@ -94,7 +92,7 @@ public class CommentController {
         return "redirect:/posts/" + postId;
     }
 
-    @GetMapping("/delete/{id}")
+    @GetMapping("/{id}/delete")
     public String deleteComment(@PathVariable Long id, @RequestParam("postId") Long postId, HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("user");
         if (currentUser == null) {
@@ -106,7 +104,6 @@ public class CommentController {
             return "error/404";
         }
 
-        // Kiểm tra quyền: Chỉ người tạo bình luận mới được xóa
         if (!comment.get().getUser().getId().equals(currentUser.getId())) {
             model.addAttribute("error", "Bạn không có quyền xóa bình luận này");
             return "redirect:/posts/" + postId;

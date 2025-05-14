@@ -13,9 +13,6 @@ import org.springframework.core.io.ResourceLoader;
 
 import javax.servlet.http.HttpSession;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -31,12 +28,18 @@ public class PostController {
     private UserService userService;
 
     @Autowired
-    private ResourceLoader resourceLoader; // Inject ResourceLoader để lấy đường dẫn resources
+    private ResourceLoader resourceLoader;
 
     @GetMapping
-    public String listPosts(Model model) {
+    public String listPosts(Model model, HttpSession session) {
         List<Post> posts = postService.getAllPosts();
         model.addAttribute("posts", posts);
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser != null) {
+            model.addAttribute("currentUser", currentUser);
+        } else {
+            return "redirect:/login";
+        }
         return "posts/list";
     }
 
@@ -53,7 +56,7 @@ public class PostController {
         }
     }
 
-    @GetMapping("/create")
+    @GetMapping("/new")
     public String showCreateForm(Model model, HttpSession session) {
         if (session.getAttribute("user") == null) {
             return "redirect:/login";
@@ -63,35 +66,34 @@ public class PostController {
         return "posts/create";
     }
 
-    @PostMapping("/create")
+    @PostMapping
     public String createPost(@ModelAttribute("post") Post post,
                              @RequestParam("image") MultipartFile image, Model model,
                              HttpSession session) {
         User user = (User) session.getAttribute("user");
 
-        // Xử lý upload ảnh
+        if (user == null) {
+            return "redirect:/login";
+        }
+
         if (!image.isEmpty()) {
             try {
-                // Kiểm tra định dạng file
                 String contentType = image.getContentType();
                 if (contentType == null || !contentType.startsWith("image/")) {
                     model.addAttribute("error", "Vui lòng chọn file ảnh (jpg, png, v.v.)");
                     return "posts/create";
                 }
 
-                // Lấy đường dẫn thư mục static/media
                 String uploadDir = resourceLoader.getResource("classpath:static/media/").getFile().getAbsolutePath();
                 File dir = new File(uploadDir);
                 if (!dir.exists()) {
                     dir.mkdirs();
                 }
 
-                // Tạo tên file duy nhất với UUID
                 String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
                 File dest = new File(uploadDir + File.separator + fileName);
                 image.transferTo(dest);
 
-                // Set imageUrl (thêm /media/ vào trước tên file)
                 post.setImageUrl("/media/" + fileName);
                 post.setAuthor(user);
             } catch (Exception e) {
@@ -108,45 +110,58 @@ public class PostController {
         return "redirect:/posts";
     }
 
-    @GetMapping("/edit/{id}")
-    public String showEditForm(@PathVariable Long id, Model model) {
+    @GetMapping("/{id}/edit")
+    public String showEditForm(@PathVariable Long id, Model model, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
         Optional<Post> post = postService.getPostById(id);
         if (post.isPresent()) {
-            model.addAttribute("post", post.get());
+            Post existingPost = post.get();
+            if (!existingPost.getAuthor().getId().equals(currentUser.getId())) {
+                return "redirect:/posts";
+            }
+            model.addAttribute("post", existingPost);
             return "posts/edit";
         } else {
             return "error/404";
         }
     }
 
-    @PostMapping("/edit/{id}")
+    @PostMapping("/{id}/edit")
     public String updatePost(@PathVariable Long id, @ModelAttribute("post") Post post,
-                             @RequestParam(value = "image", required = false) MultipartFile image, Model model) {
-        post.setId(id);
+                             @RequestParam(value = "image", required = false) MultipartFile image, Model model, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
 
-        // Xử lý upload ảnh
+        Optional<Post> existingPost = postService.getPostById(id);
+        if (!existingPost.isPresent() || !existingPost.get().getAuthor().getId().equals(currentUser.getId())) {
+            return "redirect:/posts";
+        }
+
+        post.setId(id);
         if (image != null && !image.isEmpty()) {
             try {
-                // Kiểm tra định dạng file
                 String contentType = image.getContentType();
                 if (contentType == null || !contentType.startsWith("image/")) {
                     model.addAttribute("error", "Vui lòng chọn file ảnh (jpg, png, v.v.)");
                     return "posts/edit";
                 }
 
-                // Lấy đường dẫn thư mục static/media
                 String uploadDir = resourceLoader.getResource("classpath:static/media/").getFile().getAbsolutePath();
                 File dir = new File(uploadDir);
                 if (!dir.exists()) {
                     dir.mkdirs();
                 }
 
-                // Tạo tên file duy nhất với UUID
                 String fileName = UUID.randomUUID().toString() + "_" + image.getOriginalFilename();
                 File dest = new File(uploadDir + File.separator + fileName);
                 image.transferTo(dest);
 
-                // Cập nhật imageUrl (thêm /media/ vào trước tên file)
                 post.setImageUrl("/media/" + fileName);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -159,9 +174,17 @@ public class PostController {
         return "redirect:/posts";
     }
 
-    @GetMapping("/delete/{id}")
-    public String deletePost(@PathVariable Long id) {
-        postService.deletePost(id);
+    @PostMapping("/{id}/delete")
+    public String deletePost(@PathVariable Long id, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        Optional<Post> post = postService.getPostById(id);
+        if (post.isPresent() && post.get().getAuthor().getId().equals(currentUser.getId())) {
+            postService.deletePost(id);
+        }
         return "redirect:/posts";
     }
 }

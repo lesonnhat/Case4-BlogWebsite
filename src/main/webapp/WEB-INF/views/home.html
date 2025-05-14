@@ -64,9 +64,9 @@
 </head>
 <body class="text-center">
 <form class="form-signin" th:action="@{/login}" method="post">
-    <img class="mb-4" th:src="@{media/fb.png}" alt="Facebook Logo" width="258px" height="50px">
-    <h1 class="h3 mb-3 font-weight-normal">Kết Nối Cảm Xúc</h1>
-    <div th:if="${param.error}" class="alert alert-danger">
+    <img class="mb-3" th:src="@{media/fb.png}" alt="Facebook Logo" width="258px" height="50px">
+    <h1 class="h3 mb-4 font-weight-normal">Kết Nối Cảm Xúc</h1>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}">
         Sai tên đăng nhập hoặc mật khẩu
     </div>
     <input type="text" id="inputUsername" name="username" class="form-control" placeholder="Tên đăng nhập" required autofocus aria-label="Username">
