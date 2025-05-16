@@ -131,9 +131,4 @@ public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAwa
         return resolver;
     }
 
-    // HiddenHttpMethodFilter (optional now, keep for future RESTful use)
-    @Bean
-    public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
-        return new HiddenHttpMethodFilter();
-    }
 }

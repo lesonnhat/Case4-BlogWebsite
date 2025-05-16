@@ -11,5 +11,5 @@ import java.util.List;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPost(Post post);
-    List<Comment> findByUser(User user); // Lấy tất cả comment của một user
+    List<Comment> findByUser(User user); // Lấy tất cả comment của một updateUser
 }

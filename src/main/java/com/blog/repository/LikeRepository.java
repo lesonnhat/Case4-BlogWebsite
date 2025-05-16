@@ -11,7 +11,7 @@ import java.util.List;
 @Repository
 public interface LikeRepository extends JpaRepository<Like, Long> {
     List<Like> findByPost(Post post);
-    List<Like> findByUser(User user); // Lấy tất cả like của một user
-    Like findByPostAndUser(Post post, User user); // Kiểm tra xem user đã like bài viết này chưa
+    List<Like> findByUser(User user); // Lấy tất cả like của một updateUser
+    Like findByPostAndUser(Post post, User user); // Kiểm tra xem updateUser đã like bài viết này chưa
     long countByPost(Post post); // Đếm số lượng like của một bài viết
 }
