@@ -32,7 +32,7 @@ public class UserService {
             throw new IllegalArgumentException("Email already exists");
         }
         if (user.getAvatar() == null || user.getAvatar().isEmpty()) {
-            user.setAvatar("/media/default_avatar.png");
+            user.setAvatar("media/default_avatar.jpg");
         }
         return userRepository.save(user);
     }
