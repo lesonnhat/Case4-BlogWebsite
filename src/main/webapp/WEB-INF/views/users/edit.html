@@ -1,124 +1,119 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Sửa thông tin người dùng</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-
-        .container {
-            max-width: 800px;
-            margin: auto;
-            background: white;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input[type="text"], input[type="email"], input[type="password"], input[type="file"] {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-        }
-
-        .current-image {
-            margin-bottom: 15px;
-        }
-
-        .current-image img {
-            max-width: 200px;
-            height: auto;
-            border-radius: 5px;
-        }
-
-        .error {
-            color: red;
-            margin-bottom: 10px;
-        }
-
-        .button {
-            background-color: #5cb85c;
-            color: white;
-            padding: 8px 20px;
-            border: none;
-            border-radius: 5px;
-            text-decoration: none;
-            display: inline-block;
-            cursor: pointer;
-            font-size: 16px;
-            width: 150px;
-            text-align: center;
-            box-sizing: border-box;
-        }
-
-        .button:hover {
-            background-color: #449d44;
-            color: white;
-        }
-
-        a.button {
-            background-color: #696969;
-        }
-
-        a.button:hover {
-            background-color: #343434;
-            color: white;
-        }
-
-        .button-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-    </style>
+  <title>Sửa thông tin người dùng</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input[type="text"], input[type="email"], input[type="password"], input[type="file"] {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+      font-size: 16px;
+    }
+    .current-image {
+      margin-bottom: 15px;
+    }
+    .current-image img {
+      max-width: 200px;
+      height: auto;
+      border-radius: 5px;
+    }
+    .error {
+      color: red;
+      margin-bottom: 10px;
+    }
+    .button {
+      background-color: #5cb85c;
+      color: white;
+      padding: 8px 20px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      cursor: pointer;
+      font-size: 16px;
+      width: 150px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .button:hover {
+      background-color: #449d44;
+      color: white;
+    }
+    a.button {
+      background-color: #696969;
+    }
+    a.button:hover {
+      background-color: #343434;
+      color: white;
+    }
+    .button-container {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
 <div class="container">
-    <h1>Sửa thông tin người dùng</h1>
-    <div th:if="${error}" class="error">
-        <p th:text="${error}"></p>
+  <h1>Sửa thông tin người dùng</h1>
+  <div th:if="${error}" class="error">
+    <p th:text="${error}"></p>
+  </div>
+  <div th:if="${user.avatar}" class="current-image">
+    <p>Avatar hiện tại:</p>
+    <img th:src="@{${user.avatar}}" alt="Avatar"/>
+  </div>
+  <form th:action="@{/users/{id}/edit(id=${user.id})}" th:object="${user}" method="post" enctype="multipart/form-data">
+    <div class="form-group">
+      <input type="hidden" th:field="*{id}">
     </div>
-    <div class="current-image">
-        <p>Avatar hiện tại:</p>
-        <img th:src="@{updateUserForm.avatar}" alt="Avatar"/>
+    <div class="form-group">
+      <label for="username">Username:</label>
+      <input type="text" id="username" th:field="*{username}" required>
     </div>
-    <form th:object="${updateUserForm}" method="post" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" id="email" th:field="*{email}" required>
-        </div>
-        <div class="form-group">
-            <label for="password">Password (để trống nếu không thay đổi):</label>
-            <input type="password" id="password" th:field="*{password}">
-        </div>
-        <div class="form-group">
-            <label for="avatar">Avatar:</label>
-            <input type="file" id="avatar" name="avatar">
-        </div>
-        <div class="button-container">
-            <button type="submit" class="button">Cập nhật</button>
-        </div>
-    </form>
-    <a th:href="@{/posts}" class="button">Quay lại bảng tin</a>
+    <div class="form-group">
+      <label for="email">Email:</label>
+      <input type="email" id="email" th:field="*{email}" required>
+    </div>
+    <div class="form-group">
+      <label for="password">Password (để trống nếu không thay đổi):</label>
+      <input type="password" id="password" th:field="*{password}">
+    </div>
+    <div class="form-group">
+      <label for="avatar">Avatar:</label>
+      <input type="file" id="avatar" name="avatar" accept="image/*">
+    </div>
+    <div class="button-container">
+      <button type="submit" class="button">Cập nhật</button>
+      <a th:href="@{/posts}" class="button">Quay lại bảng tin</a>
+    </div>
+  </form>
 </div>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-  <title th:text="${post?.title ?: 'Không tìm thấy bài viết'}"></title>
+  <title th:text="${post.title}"></title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -19,25 +19,25 @@
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
     .post-image {
-      max-width: 100%;
-      width: 100%;
-      height: auto;
+      max-width: 100%; /* Giữ ảnh không vượt quá container */
+      width: 100%; /* Đặt chiều rộng bằng 100% để ảnh rộng hơn */
+      height: auto; /* Giữ tỷ lệ ảnh */
       border-radius: 5px;
       margin-bottom: 15px;
-      display: block;
-      object-fit: cover;
-      max-height: 400px;
-      margin-left: auto;
-      margin-right: auto;
+      display: block; /* Đảm bảo không bị lề thừa */
+      object-fit: cover; /* Giữ ảnh trong khung */
+      max-height: 400px; /* Giữ nguyên giới hạn chiều cao */
+      margin-left: auto; /* Căn giữa theo chiều ngang */
+      margin-right: auto; /* Căn giữa theo chiều ngang */
     }
     .content-wrapper {
-      display: flex;
-      justify-content: center;
-      gap: 0px;
-      flex-direction: column;
+      display: flex; /* Sử dụng flexbox */
+      justify-content: center; /* Căn giữa theo chiều ngang */
+      gap: 0px; /* Khoảng cách giữa ảnh và text */
+      flex-direction: column; /* Sắp xếp theo cột */
     }
     .content {
-      flex: 1;
+      flex: 1; /* Nội dung text chiếm phần còn lại */
       padding: 10px 0;
     }
     .comment {
@@ -52,7 +52,15 @@
       font-size: 0.9em;
       color: #777;
     }
-    .button, .like-button, .comment-button {
+    .comment-actions a {
+      color: #5cb85c;
+      text-decoration: none;
+      margin-right: 10px;
+    }
+    .comment-actions a:hover {
+      color: #449d44;
+    }
+    .button {
       background-color: #5cb85c;
       color: white;
       padding: 8px 15px;
@@ -62,42 +70,18 @@
       display: inline-block;
       cursor: pointer;
     }
-    .button:hover, .like-button:hover, .comment-button:hover {
+    .button:hover {
       background-color: #449d44;
-    }
-    .like-button {
-      background-color: #1e90ff; /* Màu xanh blue */
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-    .like-button.liked {
-      background-color: #ff4500; /* Màu đỏ khi đã thích */
-    }
-    .like-button.liked:hover {
-      background-color: #e03e00;
     }
     .error {
       color: red;
       margin-bottom: 10px;
     }
-    .like-section, .comment-section {
-      margin-bottom: 20px;
-    }
-    .comment-input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box;
-      margin-bottom: 10px;
-      resize: vertical;
-    }
   </style>
 </head>
 <body>
 <div class="container">
-  <div class="content-wrapper" th:if="${post != null}">
+  <div class="content-wrapper">
     <img th:src="@{${post.imageUrl}}" alt="Ảnh bài viết" class="post-image">
     <div class="content">
       <h1 th:text="${post.title}"></h1>
@@ -105,132 +89,42 @@
       <p>Tác giả: <span th:text="${post.author.username}"></span></p>
     </div>
   </div>
-  <div th:if="${post == null}" class="error">
-    <p>Bài viết không tồn tại.</p>
-  </div>
-
-  <!-- Like Section -->
-  <div class="like-section">
-    <p><span id="like-count" th:text="${post != null and post.likes != null ? #lists.size(post.likes) : 0}"></span> lượt thích</p>
-    <div th:if="${currentUser != null and post != null}">
-      <button class="like-button" th:classappend="${isLiked} ? 'liked' : ''" th:onclick="'toggleLike(this, ' + ${post.id} + ')'">
-        <span class="like-icon">👍</span>
-        <span th:text="${isLiked} ? 'Bỏ thích' : 'Thích'"></span>
-      </button>
-    </div>
-    <div th:if="${currentUser == null or post == null}">
-      <p>Vui lòng <a th:href="@{/login}">đăng nhập</a> để thích bài viết.</p>
-    </div>
-  </div>
-
-  <!-- Comment Section -->
   <h2>Bình luận</h2>
-  <div class="comment-section">
-    <div id="comment-list">
-      <div th:if="${post != null and not #lists.isEmpty(post.comments)}">
-        <div th:each="comment : ${post.comments}" class="comment">
-          <p th:text="${comment.content}"></p>
-          <div class="comment-meta">
-            <p>Bởi: <span th:text="${comment.user.username}"></span> |
-              Vào: <span th:text="${#dates.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}"></span></p>
-          </div>
-        </div>
+  <!-- Hiển thị thông báo lỗi nếu có -->
+  <div th:if="${error}" class="error">
+    <p th:text="${error}"></p>
+  </div>
+  <!-- Debug session.user -->
+  <p th:text="'Session user: ' + ${session.user?.username ?: 'null'}"></p>
+  <div th:if="${not #lists.isEmpty(post.comments)}">
+    <div th:each="comment : ${post.comments}" class="comment">
+      <p th:text="${comment.content}"></p>
+      <div class="comment-meta">
+        <p>Bởi: <span th:text="${comment.user.username}"></span> |
+          Vào: <span th:text="${#dates.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}"></span></p>
       </div>
-      <p th:unless="${post != null and not #lists.isEmpty(post.comments)}">Chưa có bình luận nào.</p>
-    </div>
-
-    <h3>Thêm bình luận</h3>
-    <div th:if="${currentUser != null and post != null}">
-      <textarea id="comment-input" class="comment-input" placeholder="Nhập bình luận của bạn..." rows="3"></textarea>
-      <button class="comment-button" th:onclick="'addComment(' + ${post.id} + ')'">Bình luận</button>
-    </div>
-    <div th:if="${currentUser == null or post == null}">
-      <p>Vui lòng <a th:href="@{/login}">đăng nhập</a> để thêm bình luận.</p>
+      <div class="comment-actions" th:if="${session.user != null and session.user.id == comment.user.id}">
+        <a th:href="@{/comments/edit/{id}(id=${comment.id})}">Chỉnh sửa</a>
+        <a th:href="@{/comments/delete/{id}(id=${comment.id}, postId=${post.id})}"
+           onclick="return confirm('Bạn có chắc muốn xóa bình luận này?')">Xóa</a>
+      </div>
     </div>
   </div>
+  <p th:unless="${not #lists.isEmpty(post.comments)}">Chưa có bình luận nào.</p>
+
+  <h3>Thêm bình luận</h3>
+  <form th:action="@{/comments/create}" method="post" th:if="${session.user != null}">
+    <input type="hidden" name="postId" th:value="${post.id}">
+    <label for="content">Nội dung:</label><br>
+    <textarea id="content" name="content" required rows="3" style="width: 100%;"></textarea><br><br>
+    <button type="submit" class="button">Bình luận</button>
+  </form>
+  <p th:if="${session.user == null}">
+    Vui lòng <a th:href="@{/login}">đăng nhập</a> để thêm bình luận.
+  </p>
 
   <br>
   <a th:href="@{/posts}" class="button">Quay lại danh sách</a>
 </div>
-
-<script th:inline="javascript">
-  /* Hàm để xử lý nút Like */
-  function toggleLike(button, postId) {
-    fetch('/likes/toggle/' + postId, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    }).then(response => {
-      if (response.ok) {
-        return response.text();
-      }
-      throw new Error('Network response was not ok');
-    }).then(data => {
-      const likeCountElement = document.getElementById('like-count');
-      let likeCount = parseInt(likeCountElement.textContent);
-      if (button.classList.contains('liked')) {
-        button.classList.remove('liked');
-        button.querySelector('span:last-child').textContent = 'Thích';
-        likeCountElement.textContent = likeCount - 1;
-      } else {
-        button.classList.add('liked');
-        button.querySelector('span:last-child').textContent = 'Bỏ thích';
-        likeCountElement.textContent = likeCount + 1;
-      }
-    }).catch(error => {
-      console.error('Error:', error);
-    });
-  }
-
-  /* Hàm để thêm bình luận động */
-  function addComment(postId) {
-    const commentInput = document.getElementById('comment-input');
-    const content = commentInput.value.trim();
-
-    if (content === '') {
-      alert('Vui lòng nhập nội dung bình luận!');
-      return;
-    }
-
-    fetch('/comments', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: 'postId=' + postId + '&content=' + encodeURIComponent(content),
-    }).then(response => {
-      if (response.ok) {
-        return response.text();
-      }
-      throw new Error('Network response was not ok');
-    }).then(data => {
-      const commentList = document.getElementById('comment-list');
-      const noCommentMessage = commentList.querySelector('p');
-      if (noCommentMessage) {
-        noCommentMessage.remove();
-      }
-
-      const newComment = document.createElement('div');
-      newComment.className = 'comment';
-      newComment.innerHTML = `
-        <p>${content}</p>
-        <div class="comment-meta">
-          <p>Bởi: <span>${currentUser.username}</span> | Vào: <span>${new Date().toLocaleString('vi-VN')}</span></p>
-        </div>
-      `;
-      commentList.insertBefore(newComment, commentList.firstChild);
-
-      commentInput.value = '';
-    }).catch(error => {
-      console.error('Error:', error);
-    });
-  }
-
-  /* Lấy thông tin currentUser từ Thymeleaf */
-  const currentUser = {
-    username: /*[[${currentUser != null ? currentUser.username : 'Anonymous'}]]*/ 'Anonymous'
-  };
-</script>
 </body>
 </html>

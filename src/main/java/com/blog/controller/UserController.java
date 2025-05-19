@@ -1,6 +1,5 @@
 package com.blog.controller;
 
-import com.blog.dto.UserUpdateForm;
 import com.blog.model.User;
 import com.blog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,30 +67,33 @@ public class UserController {
             return "users/create";
         }
 
-        if (avatar != null && !avatar.isEmpty()) {
-            try {
-                String contentType = avatar.getContentType();
-                if (contentType == null || !contentType.startsWith("image/")) {
-                    model.addAttribute("error", "Vui lòng chọn file ảnh (jpg, png, v.v.)");
-                    return "users/create";
-                }
+        if (avatar == null || avatar.isEmpty()) {
+            model.addAttribute("error", "Vui lòng chọn ảnh avatar.");
+            return "users/create";
+        }
 
-                String uploadDir = resourceLoader.getResource("classpath:static/media/").getFile().getAbsolutePath();
-                File dir = new File(uploadDir);
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-
-                String fileName = UUID.randomUUID().toString() + "_" + avatar.getOriginalFilename();
-                File dest = new File(uploadDir + File.separator + fileName);
-                avatar.transferTo(dest);
-
-                user.setAvatar("/media/" + fileName);
-            } catch (Exception e) {
-                e.printStackTrace();
-                model.addAttribute("error", "Lỗi khi upload ảnh: " + e.getMessage());
+        try {
+            String contentType = avatar.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                model.addAttribute("error", "Vui lòng chọn file ảnh (jpg, png, v.v.).");
                 return "users/create";
             }
+
+            String uploadDir = resourceLoader.getResource("classpath:static/media/").getFile().getAbsolutePath();
+            File dir = new File(uploadDir);
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
+
+            String fileName = UUID.randomUUID().toString() + "_" + avatar.getOriginalFilename();
+            File dest = new File(uploadDir + File.separator + fileName);
+            avatar.transferTo(dest);
+
+            user.setAvatar("/media/" + fileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+            model.addAttribute("error", "Lỗi khi upload ảnh: " + e.getMessage());
+            return "users/create";
         }
 
         try {
@@ -110,13 +112,9 @@ public class UserController {
             return "redirect:/posts";
         }
 
-        Optional<User> foundUser = userService.getUserById(id);
-        if (foundUser.isPresent()) {
-            UserUpdateForm userUpdateForm = new UserUpdateForm();
-            userUpdateForm.setPassword(foundUser.get().getPassword());
-            userUpdateForm.setEmail(foundUser.get().getEmail());
-            userUpdateForm.setAvatar(foundUser.get().getAvatar());
-            model.addAttribute("updateUserForm", userUpdateForm);
+        Optional<User> user = userService.getUserById(id);
+        if (user.isPresent()) {
+            model.addAttribute("user", user.get());
             return "users/edit";
         } else {
             return "error/404";
@@ -124,8 +122,7 @@ public class UserController {
     }
 
     @PostMapping("/{id}/edit")
-    public String updateUser(@PathVariable Long id,
-                             @ModelAttribute("updateUserForm") UserUpdateForm userUpdateForm,
+    public String updateUser(@PathVariable Long id, @ModelAttribute("user") User user,
                              @RequestParam(value = "avatar", required = false) MultipartFile avatar,
                              HttpSession session, Model model) {
         User currentUser = (User) session.getAttribute("user");
@@ -133,75 +130,81 @@ public class UserController {
             return "redirect:/posts";
         }
 
-//        System.out.println("Received updateUser data: id=" + id + ", username=" + updateUser.getUsername() + ", email=" + updateUser.getEmail() + ", password=" + updateUser.getPassword());
+        Optional<User> existingUser = userService.getUserById(id);
+        if (!existingUser.isPresent()) {
+            return "error/404";
+        }
+
+        User userToUpdate = existingUser.get();
+
+        // Debug dữ liệu nhận được
+        System.out.println("Received user data: id=" + id + ", username=" + user.getUsername() + ", email=" + user.getEmail() + ", password=" + user.getPassword());
 
         // Kiểm tra username và email duy nhất, nhưng bỏ qua nếu không thay đổi
-//        if (updateUser.getUsername() == null || updateUser.getUsername().trim().isEmpty()) {
-//            model.addAttribute("error", "Username không được để trống.");
-//            return "users/edit";
-//        }
-//        if (!updateUser.getUsername().equals(userToUpdate.getUsername()) && userService.existsByUsername(updateUser.getUsername())) {
-//            model.addAttribute("error", "Username đã tồn tại, vui lòng chọn username khác.");
-//            return "users/edit";
-//        }
-//        userToUpdate.setUsername(updateUser.getUsername());
-//
-//        if (updateUser.getEmail() == null || updateUser.getEmail().trim().isEmpty()) {
-//            model.addAttribute("error", "Email không được để trống.");
-//            return "users/edit";
-//        }
-//        if (!updateUser.getEmail().equals(userToUpdate.getEmail()) && userService.existsByEmail(updateUser.getEmail())) {
-//            model.addAttribute("error", "Email đã tồn tại, vui lòng chọn email khác.");
-//            return "users/edit";
-//        }
-//        userToUpdate.setEmail(updateUser.getEmail());
-//
-//        // Cập nhật password chỉ khi có giá trị mới, giữ nguyên nếu để trống
-//        if (updateUser.getPassword() != null && !updateUser.getPassword().isEmpty()) {
-//            userToUpdate.setPassword(updateUser.getPassword());
-//        } else {
-//            userToUpdate.setPassword(existingUser.get().getPassword()); // Giữ nguyên password cũ
-//        }
+        if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
+            model.addAttribute("error", "Username không được để trống.");
+            return "users/edit";
+        }
+        if (!user.getUsername().equals(userToUpdate.getUsername()) && userService.existsByUsername(user.getUsername())) {
+            model.addAttribute("error", "Username đã tồn tại, vui lòng chọn username khác.");
+            return "users/edit";
+        }
+        userToUpdate.setUsername(user.getUsername());
 
-//        if (avatar != null && !avatar.isEmpty()) {
-//            try {
-//                String contentType = avatar.getContentType();
-//                if (contentType == null || !contentType.startsWith("image/")) {
-//                    model.addAttribute("error", "Vui lòng chọn file ảnh (jpg, png, v.v.)");
-//                    return "users/edit";
-//                }
-//
-//                String uploadDir = resourceLoader.getResource("classpath:static/media/").getFile().getAbsolutePath();
-//                File dir = new File(uploadDir);
-//                if (!dir.exists()) {
-//                    dir.mkdirs();
-//                }
-//
-//                String fileName = UUID.randomUUID().toString() + "_" + avatar.getOriginalFilename();
-//                File dest = new File(uploadDir + File.separator + fileName);
-//                avatar.transferTo(dest);
-//
-////                userToUpdate.setAvatar("/media/" + fileName);
-//                userToUpdate.setAvatar(fileName);
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                model.addAttribute("error", "Lỗi khi upload ảnh: " + e.getMessage());
-//                return "users/edit";
-//            }
-//        }
-//
-//        try {
-//            userService.updateUser(userToUpdate);
-//            if (currentUser.getId().equals(id)) {
-//                session.setAttribute("user", userToUpdate);
-//            }
-//            return "redirect:/posts";
-//        } catch (Exception e) {
-//            System.out.println("Update error: " + e.getMessage());
-//            model.addAttribute("error", "Lỗi khi cập nhật người dùng: " + e.getMessage());
-//            return "users/edit";
-//        }
-        return "redirect:/posts";
+        if (user.getEmail() == null || user.getEmail().trim().isEmpty()) {
+            model.addAttribute("error", "Email không được để trống.");
+            return "users/edit";
+        }
+        if (!user.getEmail().equals(userToUpdate.getEmail()) && userService.existsByEmail(user.getEmail())) {
+            model.addAttribute("error", "Email đã tồn tại, vui lòng chọn email khác.");
+            return "users/edit";
+        }
+        userToUpdate.setEmail(user.getEmail());
+
+        // Cập nhật password chỉ khi có giá trị mới, giữ nguyên nếu để trống
+        if (user.getPassword() != null && !user.getPassword().isEmpty()) {
+            userToUpdate.setPassword(user.getPassword());
+        } else {
+            userToUpdate.setPassword(existingUser.get().getPassword()); // Giữ nguyên password cũ
+        }
+
+        if (avatar != null && !avatar.isEmpty()) {
+            try {
+                String contentType = avatar.getContentType();
+                if (contentType == null || !contentType.startsWith("image/")) {
+                    model.addAttribute("error", "Vui lòng chọn file ảnh (jpg, png, v.v.).");
+                    return "users/edit";
+                }
+
+                String uploadDir = resourceLoader.getResource("classpath:static/media/").getFile().getAbsolutePath();
+                File dir = new File(uploadDir);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+
+                String fileName = UUID.randomUUID().toString() + "_" + avatar.getOriginalFilename();
+                File dest = new File(uploadDir + File.separator + fileName);
+                avatar.transferTo(dest);
+
+                userToUpdate.setAvatar("/media/" + fileName);
+            } catch (Exception e) {
+                e.printStackTrace();
+                model.addAttribute("error", "Lỗi khi upload ảnh: " + e.getMessage());
+                return "users/edit";
+            }
+        }
+
+        try {
+            userService.updateUser(userToUpdate);
+            if (currentUser.getId().equals(id)) {
+                session.setAttribute("user", userToUpdate);
+            }
+            return "redirect:/posts";
+        } catch (Exception e) {
+            System.out.println("Update error: " + e.getMessage());
+            model.addAttribute("error", "Lỗi khi cập nhật người dùng: " + e.getMessage());
+            return "users/edit";
+        }
     }
 
     @GetMapping("/{id}/delete")

@@ -48,7 +48,7 @@ public class PostController {
         Optional<Post> post = postService.getPostById(id);
         if (post.isPresent()) {
             User sessionUser = (User) session.getAttribute("user");
-            System.out.println("Viewing post ID " + id + ", session updateUser: " + (sessionUser != null ? sessionUser.getUsername() : "null"));
+            System.out.println("Viewing post ID " + id + ", session user: " + (sessionUser != null ? sessionUser.getUsername() : "null"));
             model.addAttribute("post", post.get());
             return "posts/view";
         } else {
