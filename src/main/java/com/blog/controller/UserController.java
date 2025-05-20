@@ -36,17 +36,27 @@ public class UserController {
     }
 
     @GetMapping
-    public String listUsers(Model model) {
+    public String listUsers(Model model, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null || !userService.isAdmin(currentUser)) {
+            return "redirect:/posts"; // Chỉ admin truy cập danh sách người dùng
+        }
         List<User> users = userService.getAllUsers();
         model.addAttribute("users", users);
+        model.addAttribute("currentUser", currentUser);
         return "users/list";
     }
 
     @GetMapping("/{id}")
-    public String viewUser(@PathVariable Long id, Model model) {
+    public String viewUser(@PathVariable Long id, Model model, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            return "redirect:/login"; // Người dùng phải đăng nhập để xem
+        }
         Optional<User> user = userService.getUserById(id);
         if (user.isPresent()) {
             model.addAttribute("user", user.get());
+            model.addAttribute("currentUser", currentUser);
             return "users/view";
         } else {
             return "error/404";
@@ -56,8 +66,8 @@ public class UserController {
     @GetMapping("/new")
     public String showCreateForm(Model model, HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
-        if (currentUser == null) {
-            return "redirect:/login";
+        if (currentUser == null || !userService.isAdmin(currentUser)) {
+            return "redirect:/posts";
         }
         model.addAttribute("user", new User());
         return "users/create";
@@ -66,11 +76,12 @@ public class UserController {
     @PostMapping
     public String createUser(@ModelAttribute("user") User user, Model model, HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
-        if (currentUser == null) {
-            return "redirect:/login";
+        if (currentUser == null || !userService.isAdmin(currentUser)) {
+            return "redirect:/posts";
         }
 
         try {
+            user.setRole("USER"); // Mặc định người dùng mới là USER
             userService.createUser(user);
             return "redirect:/users";
         } catch (IllegalArgumentException e) {
@@ -92,8 +103,8 @@ public class UserController {
 
         Optional<User> user = userService.getUserById(id);
         if (user.isPresent()) {
-            if (!user.get().getId().equals(currentUser.getId())) {
-                return "redirect:/users";
+            if (!userService.isAdmin(currentUser) && !user.get().getId().equals(currentUser.getId())) {
+                return "redirect:/posts"; // Chỉ admin hoặc chính người dùng đó có thể sửa
             }
             model.addAttribute("user", user.get());
             return "users/edit";
@@ -104,16 +115,15 @@ public class UserController {
 
     @PostMapping("/{id}/edit")
     public String updateUser(@PathVariable Long id, @ModelAttribute("user") User user,
-                             @RequestParam(value = "avatar", required = false) MultipartFile avatar,
-                             Model model, HttpSession session) {
+                             @RequestParam(value = "avatar", required = false) MultipartFile avatar, Model model, HttpSession session) {
         User currentUser = (User) session.getAttribute("user");
         if (currentUser == null) {
             return "redirect:/login";
         }
 
         Optional<User> existingUser = userService.getUserById(id);
-        if (!existingUser.isPresent() || !existingUser.get().getId().equals(currentUser.getId())) {
-            return "redirect:/users";
+        if (!existingUser.isPresent() || (!userService.isAdmin(currentUser) && !existingUser.get().getId().equals(currentUser.getId()))) {
+            return "redirect:/posts";
         }
 
         user.setId(id);
@@ -139,7 +149,7 @@ public class UserController {
             }
 
             userService.updateUser(user);
-            return "redirect:/users";
+            return userService.isAdmin(currentUser) ? "redirect:/users" : "redirect:/posts";
         } catch (IllegalArgumentException e) {
             model.addAttribute("error", e.getMessage());
             return "users/edit";
@@ -150,7 +160,11 @@ public class UserController {
     }
 
     @GetMapping("/{id}/delete")
-    public String deleteUser(@PathVariable Long id) {
+    public String deleteUser(@PathVariable Long id, HttpSession session) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null || !userService.isAdmin(currentUser)) {
+            return "redirect:/posts";
+        }
         userService.deleteUser(id);
         return "redirect:/users";
     }

@@ -231,15 +231,17 @@
                 <td th:text="${user.username}"></td>
                 <td th:text="${user.email}"></td>
                 <td class="action-links">
-                    <a th:href="@{/users/{id}(id=${user.id})}" class="view">Xem</a> |
-                    <a th:href="@{/users/{id}/edit(id=${user.id})}">Sửa</a> |
-                    <a th:href="@{/users/{id}/delete(id=${user.id})}" class="delete"
-                       onclick="return confirm('Bạn có chắc muốn xóa người dùng này?')">Xóa</a>
+                    <a th:href="@{/users/{id}(id=${user.id})}" class="view">Xem</a>
+                    <span th:if="${currentUser != null and currentUser.role == 'ADMIN'}">
+                        | <a th:href="@{/users/{id}/edit(id=${user.id})}">Sửa</a> |
+                        <a th:href="@{/users/{id}/delete(id=${user.id})}" class="delete"
+                           onclick="return confirm('Bạn có chắc muốn xóa người dùng này?')">Xóa</a>
+                    </span>
                 </td>
             </tr>
             </tbody>
         </table>
-        <a th:href="@{/users/new}" class="button-new">Tạo người dùng mới</a>
+        <a th:href="@{/users/new}" class="button-new" th:if="${currentUser != null and currentUser.role == 'ADMIN'}">Tạo người dùng mới</a>
     </div>
 </div>
 <footer class="footer">

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Chỉnh sửa bình luận</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .error {
+      color: red;
+      margin-bottom: 10px;
+    }
+    .button {
+      background-color: #5bc0de;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      font-size: 16px; /* Đồng bộ font-size */
+    }
+    .button:hover {
+      background-color: #31b0d5;
+    }
+    .button-gray {
+      background-color: #808080;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      cursor: pointer;
+      margin-left: 10px;
+      font-family: Arial, sans-serif;
+      font-size: 16px; /* Đồng bộ font-size */
+    }
+    .button-gray:hover {
+      background-color: #666;
+    }
+    .edit-form {
+      margin-top: 20px;
+    }
+    .edit-form label, .edit-form textarea {
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Chỉnh sửa bình luận</h2>
+
+  <!-- Hiển thị thông báo lỗi nếu có -->
+  <div th:if="${error}" class="error">
+    <p th:text="${error}"></p>
+  </div>
+
+  <!-- Form chỉnh sửa bình luận -->
+  <form th:action="@{/comments/{id}/edit(id=${comment.id})}" method="post" class="edit-form">
+    <input type="hidden" name="postId" th:value="${postId}"/>
+    <textarea id="content" name="content" required rows="3" style="width: 100%;" th:text="${comment.content}"></textarea><br/><br/>
+    <button type="submit" class="button">Lưu</button>
+    <a th:href="@{/posts}" class="button-gray">Quay lại bảng tin</a>
+  </form>
+</div>
+</body>
+</html>

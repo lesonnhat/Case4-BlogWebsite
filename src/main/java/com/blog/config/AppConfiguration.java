@@ -122,7 +122,7 @@ public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAwa
         return templateEngine;
     }
 
-    //Upload file
+    // Upload file
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/image/**")
@@ -136,7 +136,7 @@ public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAwa
         return resolver;
     }
 
-    // HiddenHttpMethodFilter (optional now, keep for future RESTful use)
+    // HiddenHttpMethodFilter
     @Bean
     public HiddenHttpMethodFilter hiddenHttpMethodFilter() {
         return new HiddenHttpMethodFilter();

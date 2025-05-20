@@ -1,7 +1,9 @@
 package com.blog.model;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
@@ -14,7 +16,7 @@ public class Post {
     @Column(nullable = false)
     private String title;
 
-    @Column(nullable = false, columnDefinition = "TEXT") // Thêm columnDefinition = "TEXT" nếu cần
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @ManyToOne
@@ -25,19 +27,22 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdAt;
 
-    @Column(name = "image_url") // Thêm trường image_url
+    @Column(name = "image_url")
     private String imageUrl;
+
+    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER)
+    private List<Comment> comments = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {
         createdAt = new Date();
     }
 
-    // Constructors, getters, and setters
-
+    // Constructors
     public Post() {
     }
 
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -84,5 +89,13 @@ public class Post {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
     }
 }

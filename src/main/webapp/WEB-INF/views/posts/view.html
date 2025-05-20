@@ -52,16 +52,8 @@
       font-size: 0.9em;
       color: #777;
     }
-    .comment-actions a {
-      color: #5cb85c;
-      text-decoration: none;
-      margin-right: 10px;
-    }
-    .comment-actions a:hover {
-      color: #449d44;
-    }
     .button {
-      background-color: #5cb85c;
+      background-color: #5bc0de;
       color: white;
       padding: 8px 15px;
       border: none;
@@ -69,13 +61,52 @@
       text-decoration: none;
       display: inline-block;
       cursor: pointer;
+      font-family: Arial, sans-serif;
+      font-size: 16px; /* Đồng bộ font-size */
     }
     .button:hover {
-      background-color: #449d44;
+      background-color: #31b0d5;
+    }
+    .button-gray {
+      background-color: #808080;
+      color: white;
+      padding: 8px 15px;
+      border: none;
+      border-radius: 5px;
+      text-decoration: none;
+      display: inline-block;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      font-size: 16px; /* Đồng bộ font-size */
+      margin-left: 10px;
+    }
+    .button-gray:hover {
+      background-color: #666;
     }
     .error {
       color: red;
       margin-bottom: 10px;
+    }
+    .comment-form {
+      margin-top: 20px; /* Thêm khoảng cách phía trên form */
+    }
+    .comment-form label, .comment-form textarea {
+      font-family: Arial, sans-serif; /* Thống nhất font chữ */
+    }
+    .edit-link {
+      color: #5cb85c;
+      text-decoration: none;
+      margin-right: 10px;
+    }
+    .edit-link:hover {
+      color: #449d44;
+    }
+    .delete-link {
+      color: #d9534f;
+      text-decoration: none;
+    }
+    .delete-link:hover {
+      color: #c9302c;
     }
   </style>
 </head>
@@ -86,45 +117,52 @@
     <div class="content">
       <h1 th:text="${post.title}"></h1>
       <p th:text="${post.content}"></p>
-      <p>Tác giả: <span th:text="${post.author.username}"></span></p>
+      <p>• Tác giả: <span th:text="${post.author.username}"></span></p>
     </div>
   </div>
-  <h2>Bình luận</h2>
+  <!--  <h2>Thêm bình luận</h2>-->
   <!-- Hiển thị thông báo lỗi nếu có -->
   <div th:if="${error}" class="error">
     <p th:text="${error}"></p>
   </div>
-  <!-- Debug session.user -->
-  <p th:text="'Session user: ' + ${session.user?.username ?: 'null'}"></p>
-  <div th:if="${not #lists.isEmpty(post.comments)}">
+  <!--  <!– Hiển thị thông tin người dùng phiên hiện tại –>-->
+  <!--  <p>Người dùng: <span th:text="${session.user != null} ? ${session.user.username} : 'Chưa đăng nhập'"></span></p>-->
+
+  <h3>Thêm bình luận</h3>
+  <div th:if="${session.user}">
+    <form th:action="@{/comments}" method="post" class="comment-form">
+      <input type="hidden" name="postId" th:value="${post.id}"/>
+      <textarea id="content" name="content" required rows="3" style="width: 100%;"></textarea><br/><br/>
+      <button type="submit" class="button">Bình luận</button>
+      <a th:href="@{/posts}" class="button-gray">Quay lại bảng tin</a>
+    </form>
+  </div>
+
+  <div th:unless="${session.user}">
+    <p>Vui lòng <a th:href="@{/login}">đăng nhập</a> để thêm bình luận.</p>
+  </div>
+
+  <!-- Hiển thị danh sách bình luận -->
+  <div th:if="${post.comments}">
     <div th:each="comment : ${post.comments}" class="comment">
       <p th:text="${comment.content}"></p>
       <div class="comment-meta">
-        <p>Bởi: <span th:text="${comment.user.username}"></span> |
-          Vào: <span th:text="${#dates.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}"></span></p>
+        <p>
+          Bởi: <span th:text="${comment.user.username}"></span> |
+          Vào: <span th:text="${#dates.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
+        </p>
       </div>
-      <div class="comment-actions" th:if="${session.user != null and session.user.id == comment.user.id}">
-        <a th:href="@{/comments/edit/{id}(id=${comment.id})}">Chỉnh sửa</a>
-        <a th:href="@{/comments/delete/{id}(id=${comment.id}, postId=${post.id})}"
+      <div class="comment-actions" th:if="${session.user?.id == comment.user.id}">
+        <a th:href="@{/comments/{id}/edit(id=${comment.id})}" class="edit-link">Chỉnh sửa</a>
+        <a th:href="@{/comments/{id}/delete(id=${comment.id}, postId=${post.id})}" class="delete-link"
            onclick="return confirm('Bạn có chắc muốn xóa bình luận này?')">Xóa</a>
       </div>
     </div>
   </div>
-  <p th:unless="${not #lists.isEmpty(post.comments)}">Chưa có bình luận nào.</p>
+  <p th:unless="${post.comments}">Chưa có bình luận nào.</p>
 
-  <h3>Thêm bình luận</h3>
-  <form th:action="@{/comments/create}" method="post" th:if="${session.user != null}">
-    <input type="hidden" name="postId" th:value="${post.id}">
-    <label for="content">Nội dung:</label><br>
-    <textarea id="content" name="content" required rows="3" style="width: 100%;"></textarea><br><br>
-    <button type="submit" class="button">Bình luận</button>
-  </form>
-  <p th:if="${session.user == null}">
-    Vui lòng <a th:href="@{/login}">đăng nhập</a> để thêm bình luận.
-  </p>
-
-  <br>
-  <a th:href="@{/posts}" class="button">Quay lại danh sách</a>
+  <!--  <br>-->
+  <!--  <a th:href="@{/posts}" class="button">Quay lại danh sách</a>-->
 </div>
 </body>
 </html>

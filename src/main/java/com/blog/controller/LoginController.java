@@ -36,7 +36,11 @@ public class LoginController {
         if (user != null && user.getPassword().equals(password)) {
             HttpSession session = request.getSession();
             session.setAttribute("user", user);
-            return "redirect:/posts";
+            if (userService.isAdmin(user)) {
+                return "redirect:/users"; // Chuyển hướng admin đến danh sách người dùng
+            } else {
+                return "redirect:/posts"; // Người dùng thường đến bảng tin
+            }
         } else {
             model.addAttribute("error", "Sai tên đăng nhập hoặc mật khẩu");
             return "login";

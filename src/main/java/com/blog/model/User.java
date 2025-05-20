@@ -21,6 +21,9 @@ public class User {
 
     private String avatar;
 
+    @Column(nullable = false, columnDefinition = "VARCHAR(50) DEFAULT 'USER'")
+    private String role; // Thêm trường role với giá trị mặc định là "USER"
+
     // Constructors, getters, and setters
 
     public Long getId() {
@@ -61,5 +64,13 @@ public class User {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }
