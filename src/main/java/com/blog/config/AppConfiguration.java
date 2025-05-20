@@ -2,11 +2,13 @@ package com.blog.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -37,6 +39,7 @@ import java.util.Properties;
 @EnableJpaRepositories("com.blog.repository")
 @ComponentScan(basePackages = "com.blog")
 @EnableSpringDataWebSupport
+@PropertySource("classpath:upload_file.properties")
 public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAware {
 
     private ApplicationContext applicationContext;
@@ -45,6 +48,9 @@ public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAwa
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
     }
+
+    @Value("${file-upload}")
+    private String fileUpload;
 
     // JPA
     @Bean
@@ -116,14 +122,13 @@ public class AppConfiguration implements WebMvcConfigurer, ApplicationContextAwa
         return templateEngine;
     }
 
-    // Resource handlers
+    //Upload file
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/media/**")
-                .addResourceLocations("classpath:/static/media/");
+        registry.addResourceHandler("/image/**")
+                .addResourceLocations("file:" + fileUpload);
     }
 
-    // File upload
     @Bean(name = "multipartResolver")
     public CommonsMultipartResolver getResolver() {
         CommonsMultipartResolver resolver = new CommonsMultipartResolver();

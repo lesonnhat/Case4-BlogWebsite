@@ -36,7 +36,7 @@
             margin-bottom: 15px;
         }
         .banner {
-            background: url('/media/background.jpg') no-repeat center center/cover;
+            background: url('/image/background.jpg') no-repeat center center/cover;
             color: white;
             text-align: center;
             padding: 80px 0;
@@ -202,11 +202,11 @@
     </div>
     <div th:each="post : ${posts}" class="post">
         <div class="author-info">
-            <img th:src="${post.author.avatar}" class="avatar" alt="Avatar">
+            <img th:src="@{'/image/' + ${post.author.getAvatar()}}" class="avatar" alt="Avatar">
             <a th:href="@{/users/{id}(id=${post.author.id})}" th:text="${post.author.username}"></a>
             <span class="time" th:text="${#dates.format(post.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
         </div>
-        <img th:src="@{${post.imageUrl}}" class="post-image" alt="Ảnh bài viết">
+        <img th:src="@{'/image/' + ${post.getImageUrl()}}" class="post-image" alt="Ảnh bài viết">
         <h2 th:text="${post.title}"></h2>
         <p th:text="${post.content}">Nội dung bài viết</p>
         <div class="post-actions">

@@ -28,7 +28,8 @@
       margin-left: 10px;
     }
     .avatar {
-      max-width: 200px;
+      max-width: 150px;
+      margin-left: 10px;
       height: auto;
       border-radius: 5px;
     }
@@ -72,7 +73,7 @@
     <label>Email:</label><span th:text="${user.email}"></span>
   </div>
   <div class="info-group">
-    <label>Avatar:</label><img th:src="${user.avatar}" class="avatar" alt="Avatar"/>
+    <label>Avatar:</label><img th:src="@{'/image/' + ${user.getAvatar()}}" class="avatar" alt="Avatar"/>
   </div>
   <a th:href="@{/posts}" class="button">Quay lại bảng tin</a>
 </div>

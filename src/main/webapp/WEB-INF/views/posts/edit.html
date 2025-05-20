@@ -100,9 +100,9 @@
   <div th:if="${error}" class="error">
     <p th:text="${error}"></p>
   </div>
-  <div th:if="${post.imageUrl}" class="current-image">
+  <div th:src="@{'/image/' + ${post.getImageUrl()}}" class="current-image">
     <p>Ảnh hiện tại:</p>
-    <img th:src="@{${post.imageUrl}}" alt="Ảnh bài viết"/>
+    <img th:src="@{'/image/' + ${post.getImageUrl()}}" alt="Ảnh bài viết"/>
   </div>
   <form th:action="@{/posts/{id}/edit(id=${post.id})}" th:object="${post}" method="post" enctype="multipart/form-data">
     <div class="form-group">

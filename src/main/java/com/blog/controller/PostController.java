@@ -94,7 +94,7 @@ public class PostController {
                 File dest = new File(uploadDir + File.separator + fileName);
                 image.transferTo(dest);
 
-                post.setImageUrl("/media/" + fileName);
+                post.setImageUrl(fileName);
                 post.setAuthor(user);
             } catch (Exception e) {
                 e.printStackTrace();
@@ -162,7 +162,7 @@ public class PostController {
                 File dest = new File(uploadDir + File.separator + fileName);
                 image.transferTo(dest);
 
-                post.setImageUrl("/media/" + fileName);
+                post.setImageUrl(fileName);
             } catch (Exception e) {
                 e.printStackTrace();
                 model.addAttribute("error", "Lỗi khi upload ảnh: " + e.getMessage());

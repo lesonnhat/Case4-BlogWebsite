@@ -82,7 +82,7 @@
 <body>
 <div class="container">
   <div class="content-wrapper">
-    <img th:src="@{${post.imageUrl}}" alt="Ảnh bài viết" class="post-image">
+    <img th:src="@{'/image/' + ${post.getImageUrl()}}" alt="Ảnh bài viết" class="post-image">
     <div class="content">
       <h1 th:text="${post.title}"></h1>
       <p th:text="${post.content}"></p>

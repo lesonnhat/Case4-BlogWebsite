@@ -39,7 +39,7 @@
       margin-bottom: 15px;
     }
     .current-image img {
-      max-width: 200px;
+      max-width: 150px;
       height: auto;
       border-radius: 5px;
     }
@@ -85,9 +85,9 @@
   <div th:if="${error}" class="error">
     <p th:text="${error}"></p>
   </div>
-  <div th:if="${user.avatar}" class="current-image">
+  <div th:src="@{'/image/' + ${user.getAvatar()}}" class="current-image">
     <p>Avatar hiện tại:</p>
-    <img th:src="@{${user.avatar}}" alt="Avatar"/>
+    <img th:src="@{'/image/' + ${user.getAvatar()}}" alt="Avatar"/>
   </div>
   <form th:action="@{/users/{id}/edit(id=${user.id})}" th:object="${user}" method="post" enctype="multipart/form-data">
     <div class="form-group">
