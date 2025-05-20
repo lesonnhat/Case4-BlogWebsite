@@ -2,6 +2,7 @@ package com.blog.controller;
 
 import com.blog.model.Post;
 import com.blog.model.User;
+import com.blog.service.CommentService;
 import com.blog.service.PostService;
 import com.blog.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,6 +27,9 @@ public class PostController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private CommentService commentService;
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -186,5 +190,19 @@ public class PostController {
             postService.deletePost(id);
         }
         return "redirect:/posts";
+    }
+
+    @GetMapping("/{postId}/comments/{commentId}/delete")
+    public String deleteCommentFromPost(@PathVariable Long postId, @PathVariable Long commentId, HttpSession session, Model model) {
+        User currentUser = (User) session.getAttribute("user");
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+
+        Optional<Post> post = postService.getPostById(postId);
+        if (post.isPresent() && post.get().getAuthor().getId().equals(currentUser.getId())) {
+            commentService.deleteComment(commentId);
+        }
+        return "redirect:/posts/" + postId;
     }
 }

@@ -104,12 +104,20 @@ public class CommentController {
             return "error/404";
         }
 
-        if (!comment.get().getUser().getId().equals(currentUser.getId())) {
+        Optional<Post> post = postService.getPostById(postId);
+        if (!post.isPresent()) {
+            return "error/404";
+        }
+
+        // Kiểm tra nếu người dùng là tác giả bình luận hoặc tác giả bài viết
+        if (comment.get().getUser().getId().equals(currentUser.getId()) ||
+                post.get().getAuthor().getId().equals(currentUser.getId())) {
+            commentService.deleteComment(id);
+        } else {
             model.addAttribute("error", "Bạn không có quyền xóa bình luận này");
             return "redirect:/posts/" + postId;
         }
 
-        commentService.deleteComment(id);
         return "redirect:/posts/" + postId;
     }
 }

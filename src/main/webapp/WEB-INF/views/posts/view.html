@@ -120,13 +120,11 @@
       <p>• Tác giả: <span th:text="${post.author.username}"></span></p>
     </div>
   </div>
-  <!--  <h2>Thêm bình luận</h2>-->
+
   <!-- Hiển thị thông báo lỗi nếu có -->
   <div th:if="${error}" class="error">
     <p th:text="${error}"></p>
   </div>
-  <!--  <!– Hiển thị thông tin người dùng phiên hiện tại –>-->
-  <!--  <p>Người dùng: <span th:text="${session.user != null} ? ${session.user.username} : 'Chưa đăng nhập'"></span></p>-->
 
   <h3>Thêm bình luận</h3>
   <div th:if="${session.user}">
@@ -152,7 +150,7 @@
           Vào: <span th:text="${#dates.format(comment.createdAt, 'dd/MM/yyyy HH:mm')}"></span>
         </p>
       </div>
-      <div class="comment-actions" th:if="${session.user?.id == comment.user.id}">
+      <div class="comment-actions" th:if="${session.user?.id == comment.user.id or session.user?.id == post.author.id}">
         <a th:href="@{/comments/{id}/edit(id=${comment.id})}" class="edit-link">Chỉnh sửa</a>
         <a th:href="@{/comments/{id}/delete(id=${comment.id}, postId=${post.id})}" class="delete-link"
            onclick="return confirm('Bạn có chắc muốn xóa bình luận này?')">Xóa</a>
@@ -161,8 +159,8 @@
   </div>
   <p th:unless="${post.comments}">Chưa có bình luận nào.</p>
 
-  <!--  <br>-->
-  <!--  <a th:href="@{/posts}" class="button">Quay lại danh sách</a>-->
+  <!-- Nút quay lại -->
+  <a th:href="@{/posts}" class="button">Quay lại bảng tin</a>
 </div>
 </body>
 </html>
